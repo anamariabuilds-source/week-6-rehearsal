@@ -1,12 +1,12 @@
-# Commit 6 decisions
+# Commit 7 decisions
 
-- Store one typed, in-memory session evidence object with scenario version, validity, optional confound reason, and a structured event array.
-- Record exactly four events for a completed path: rehearsal started, blockage presented, route action selected, and next state presented.
-- Require one of each event in chronological sequence and require the next state to match the selected allowlisted action.
-- Return `Indeterminate` for malformed, incomplete, duplicated, out-of-order, mismatched, or technically confounded evidence.
-- Detect FAILED-ROUTE PERSISTENCE only when `Continue toward Primary Exit` follows the visible Primary Exit blockage.
-- Keep the bounded evaluation in deterministic TypeScript with no Gemini participation, thresholds, scores, or additional patterns.
+- Show the bounded result as `Indeterminate` when no complete valid session evidence exists.
+- Keep the Human Reviewer surface separate from the Brigadista experience and show the scenario version, validity, event trace, and bounded result together.
+- Store the human-authored reviewer note only in the shared in-memory session context and validate it against the locked 500-character schema before saving.
+- Provide one reset action that clears candidate changes, confirmation, rehearsal state, evidence, result, and reviewer note without creating history.
+- Use the existing three-value result contract directly in the review UI without adding scores, ratings, recommendations, or automated conclusions.
+- Extend regression coverage through a mocked successful Gemini request and explicit pre-provider oversized-upload rejection.
 
 ## Next session’s first move
 
-Render the completed evidence and bounded result for a Human Reviewer, add the validated in-memory note and reset behavior, then run the full pre-Deploy-1 regression audit.
+Prepare Deploy 1 and run the formal Mechanical Pass against the deployed application.

@@ -404,6 +404,30 @@ h3 { margin-bottom: 10px; font-size: 1.3rem; }
 .routeActions button { min-height: 48px; padding: 11px 16px; border: 1px solid #b8c5d8; border-radius: 9px; color: var(--ink); background: var(--surface); font: inherit; font-weight: 730; cursor: pointer; }
 .routeActions button:hover, .routeActions button:focus-visible { border-color: var(--accent); outline: 2px solid rgba(40, 87, 214, 0.15); }
 
+.reviewMeta { display: flex; padding: 13px 16px; border: 1px solid var(--line); border-radius: 10px; gap: 10px 28px; flex-wrap: wrap; color: var(--muted); background: var(--surface); font-size: 0.82rem; }
+.reviewMeta strong { margin-right: 6px; color: var(--ink); }
+.traceTableWrap { overflow-x: auto; }
+.traceTable { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.traceTable th, .traceTable td { padding: 13px 15px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.traceTable th { color: var(--muted); background: var(--soft); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.traceTable tbody tr:last-child td { border-bottom: 0; }
+.traceTable time { white-space: nowrap; }
+.evaluationPanel { display: flex; padding: 22px; align-items: center; justify-content: space-between; gap: 20px; }
+.evaluationPanel h2 { margin-bottom: 8px; font-size: 1.2rem; }
+.evaluationPanel p { margin-bottom: 0; color: var(--muted); }
+.resultBadge { display: inline-flex; padding: 10px 13px; border-radius: 8px; white-space: nowrap; }
+.result-pattern-detected { color: #8a2d35; background: #fde7e9; }
+.result-pattern-not-detected { color: #28633b; background: #e4f5e8; }
+.result-indeterminate { color: #665115; background: #fff3c9; }
+.reviewForm { display: grid; padding: 22px; gap: 10px; }
+.reviewForm label { font-weight: 760; }
+.reviewForm textarea { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: #fbfcfe; font: inherit; resize: vertical; }
+.reviewForm textarea:focus-visible { border-color: var(--accent); outline: 2px solid rgba(40, 87, 214, 0.18); }
+.noteMeta { display: flex; justify-content: space-between; gap: 14px; color: var(--muted); font-size: 0.76rem; }
+.formError { margin: 0; color: #8a2d35; font-size: 0.82rem; font-weight: 700; }
+.reviewForm button { justify-self: end; padding: 10px 15px; border: 0; border-radius: 8px; color: white; background: var(--accent); font: inherit; font-weight: 750; cursor: pointer; }
+.actionBar .secondaryButton { color: var(--ink); border: 1px solid #b8c5d8; background: var(--surface); cursor: pointer; }
+
 .siteFooter { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 24px 0 34px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.82rem; }
 
 @media (max-width: 900px) {
@@ -432,6 +456,8 @@ h3 { margin-bottom: 10px; font-size: 1.3rem; }
   .rehearsalRoute { gap: 7px; }
   .rehearsalRoute > span { font-size: 1rem; }
   .sceneNode { min-width: 0; min-height: 78px; padding: 8px; font-size: 0.75rem; }
+  .evaluationPanel { align-items: flex-start; flex-direction: column; }
+  .noteMeta { flex-direction: column; gap: 3px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

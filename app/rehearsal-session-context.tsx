@@ -8,6 +8,7 @@ import {
 } from "react";
 import { confirmRouteModel } from "../lib/route-confirmation";
 import { routeModelSchema, type RouteModel } from "../lib/route-model";
+import { reviewerNoteSchema } from "../lib/route-model";
 import { simulatedRouteModel } from "../lib/simulated-route-model";
 import {
   applyRouteAction,
@@ -38,6 +39,9 @@ type RehearsalSessionContextValue = {
   chooseRouteAction: (action: unknown) => void;
   sessionEvidence: SessionEvidence | null;
   patternResult: PatternResult | null;
+  reviewerNote: string;
+  saveReviewerNote: (note: string) => boolean;
+  resetSession: () => void;
 };
 
 const RehearsalSessionContext = createContext<RehearsalSessionContextValue | null>(null);
@@ -50,6 +54,7 @@ export function RehearsalSessionProvider({ children }: { children: ReactNode }) 
   const [rehearsalState, setRehearsalState] = useState<RehearsalState>(idleRehearsalState);
   const [sessionEvidence, setSessionEvidence] = useState<SessionEvidence | null>(null);
   const [patternResult, setPatternResult] = useState<PatternResult | null>(null);
+  const [reviewerNote, setReviewerNote] = useState("");
 
   function setCandidateModel(updater: CandidateUpdater) {
     setCandidateState((current) => {
@@ -60,6 +65,7 @@ export function RehearsalSessionProvider({ children }: { children: ReactNode }) 
     setRehearsalState(idleRehearsalState);
     setSessionEvidence(null);
     setPatternResult(null);
+    setReviewerNote("");
   }
 
   function confirmCandidateModel() {
@@ -100,6 +106,22 @@ export function RehearsalSessionProvider({ children }: { children: ReactNode }) 
     }
   }
 
+  function saveReviewerNote(note: string) {
+    const parsed = reviewerNoteSchema.safeParse(note);
+    if (!parsed.success) return false;
+    setReviewerNote(parsed.data);
+    return true;
+  }
+
+  function resetSession() {
+    setCandidateState(routeModelSchema.parse(simulatedRouteModel));
+    setConfirmedRouteModel(null);
+    setRehearsalState(idleRehearsalState);
+    setSessionEvidence(null);
+    setPatternResult(null);
+    setReviewerNote("");
+  }
+
   return (
     <RehearsalSessionContext.Provider value={{
       candidateModel,
@@ -112,6 +134,9 @@ export function RehearsalSessionProvider({ children }: { children: ReactNode }) 
       chooseRouteAction,
       sessionEvidence,
       patternResult,
+      reviewerNote,
+      saveReviewerNote,
+      resetSession,
     }}>
       {children}
     </RehearsalSessionContext.Provider>

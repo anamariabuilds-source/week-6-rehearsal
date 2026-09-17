@@ -131,6 +131,25 @@ test("valid image MIME types are accepted", () => {
   }
 });
 
+test("valid simulated-map upload returns a validated Unconfirmed candidate model", async () => {
+  let providerRequest;
+  const candidateModel = await extractVisionCandidateModel({
+    bytes: new Uint8Array([137, 80, 78, 71]),
+    mimeType: "image/png",
+    apiKey: "test-key",
+    fetchImplementation: async (url, init) => {
+      providerRequest = { url, init };
+      return Response.json({
+        candidates: [{ content: { parts: [{ text: JSON.stringify(validVisionOutput) }] } }],
+      });
+    },
+  });
+
+  assert.equal(candidateModel.status, "Unconfirmed");
+  assert.match(String(providerRequest.url), /gemini-2\.5-flash-lite/);
+  assert.equal(providerRequest.init.headers["x-goog-api-key"], "test-key");
+});
+
 test("invalid image type is rejected before a provider call", async () => {
   let providerCalls = 0;
 
@@ -151,6 +170,21 @@ test("oversized image is rejected", () => {
     type: "image/png",
     size: maxImageUploadBytes + 1,
   }));
+});
+
+test("oversized image is rejected before a provider call", async () => {
+  let providerCalls = 0;
+
+  await assert.rejects(() => extractVisionCandidateModel({
+    bytes: new Uint8Array(maxImageUploadBytes + 1),
+    mimeType: "image/jpeg",
+    apiKey: "test-key",
+    fetchImplementation: async () => {
+      providerCalls += 1;
+      return new Response();
+    },
+  }));
+  assert.equal(providerCalls, 0);
 });
 
 test("schema-valid candidate response is accepted as Unconfirmed", () => {
