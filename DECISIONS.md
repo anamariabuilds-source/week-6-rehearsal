@@ -23,6 +23,16 @@ Fix: render connection identity from validated from/to endpoints rather than dep
 
 Deploy 2 pending.
 
+## Mechanical Pass — Deploy 2
+
+Deploy 2 → bug observed: after every visible required candidate was marked Confirmed, the Confirm route model button remained disabled and blocked the rehearsal.
+
+Root cause: Gemini returned multiple candidate labels, but the setup UI rendered and updated only the first label while the confirmation predicate correctly evaluated every label. The hidden label remained unresolved.
+
+Smallest fix: render and update every validated candidate label so every required status counted by the confirmation gate is represented in the Consultant/Admin UI. The confirmation predicate and explicit human-confirmation transition remain unchanged.
+
+Deploy 2 → fix → redeploy pending.
+
 ## Next session’s first move
 
-Prepare Deploy 2; do not begin the Persona Test yet.
+Redeploy the human-confirmation gate fix; do not begin the Persona Test yet.

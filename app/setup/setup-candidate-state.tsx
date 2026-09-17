@@ -138,15 +138,26 @@ export function SetupCandidateState() {
     }));
   }
 
-  function updateRouteLabel(text: string) {
-    const current = model.labels[0];
+  function updateRouteLabel(id: string, text: string) {
+    const current = model.labels.find((label) => label.id === id);
     const result = routeLabelSchema.safeParse({ ...current, text });
 
     if (!result.success) return;
 
     setModel((currentModel) => routeModelSchema.parse({
       ...currentModel,
-      labels: [result.data],
+      labels: currentModel.labels.map((label) =>
+        label.id === id ? result.data : label,
+      ),
+    }));
+  }
+
+  function updateRouteLabelStatus(id: string, reviewStatus: CandidateReviewStatus) {
+    setModel((currentModel) => routeModelSchema.parse({
+      ...currentModel,
+      labels: currentModel.labels.map((label) =>
+        label.id === id ? { ...label, reviewStatus } : label,
+      ),
     }));
   }
 
@@ -272,28 +283,25 @@ export function SetupCandidateState() {
               })}
             </CandidateGroup>
 
-            <CandidateGroup title="Simple label">
-              <CandidateRow>
-                <label className="candidateLabel candidateLabelWide">
-                  <span className="visuallyHidden">Simulation boundary label</span>
-                  <input
-                    maxLength={160}
-                    onChange={(event) => updateRouteLabel(event.target.value)}
-                    required
-                    value={model.labels[0].text}
+            <CandidateGroup title="Simple labels">
+              {model.labels.map((label) => (
+                <CandidateRow key={label.id}>
+                  <label className="candidateLabel candidateLabelWide">
+                    <span className="visuallyHidden">Candidate label {label.text}</span>
+                    <input
+                      maxLength={160}
+                      onChange={(event) => updateRouteLabel(label.id, event.target.value)}
+                      required
+                      value={label.text}
+                    />
+                  </label>
+                  <ReviewStatusSelect
+                    label={label.text}
+                    onChange={(reviewStatus) => updateRouteLabelStatus(label.id, reviewStatus)}
+                    value={label.reviewStatus}
                   />
-                </label>
-                <ReviewStatusSelect
-                  label="Simulation boundary label"
-                  onChange={(reviewStatus) => {
-                    setModel((currentModel) => routeModelSchema.parse({
-                      ...currentModel,
-                      labels: [{ ...currentModel.labels[0], reviewStatus }],
-                    }));
-                  }}
-                  value={model.labels[0].reviewStatus}
-                />
-              </CandidateRow>
+                </CandidateRow>
+              ))}
             </CandidateGroup>
           </div>
         </section>

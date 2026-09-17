@@ -302,6 +302,18 @@ test("Suggested required item blocks confirmation", () => {
   assert.equal(isRouteModelConfirmable(validRouteModel), false);
 });
 
+test("one unresolved label among multiple required labels blocks confirmation", () => {
+  const model = {
+    ...resolvedRouteModel,
+    labels: [
+      ...resolvedRouteModel.labels,
+      { id: "second-label", text: "Not a real evacuation plan", reviewStatus: "Suggested" },
+    ],
+  };
+
+  assert.equal(isRouteModelConfirmable(model), false);
+});
+
 test("Needs review required item blocks confirmation", () => {
   const model = {
     ...resolvedRouteModel,
