@@ -184,6 +184,7 @@ h3 { margin-bottom: 10px; font-size: 1.3rem; }
 
 .statusWarning { color: #7c4b00; background: #ffedb3; }
 .statusNeutral, .placeholderTag { color: #47546a; background: #e8edf4; }
+.statusConfirmed { color: #28633b; background: #e4f5e8; }
 
 .notice, .boundaryNote {
   display: flex;
@@ -380,6 +381,7 @@ h3 { margin-bottom: 10px; font-size: 1.3rem; }
 
 .actionBar { display: flex; padding: 18px; border: 1px solid var(--line); border-radius: 14px; align-items: center; justify-content: space-between; gap: 18px; background: var(--surface); }
 .actionBar p { margin: 0; color: var(--muted); }
+.confirmationMessage { margin-top: 5px !important; color: #28633b !important; font-weight: 700; }
 .actionBar button { flex: 0 0 auto; padding: 11px 17px; border: 0; border-radius: 9px; color: #7d8797; background: #dfe4eb; font-weight: 760; cursor: not-allowed; }
 
 .boundaryNote { color: #665115; border-color: #ead792; background: #fffaf0; }

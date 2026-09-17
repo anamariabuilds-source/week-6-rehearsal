@@ -11,8 +11,9 @@ import {
   type CandidateReviewStatus,
   type RouteModel,
 } from "../../lib/route-model";
-import { simulatedRouteModel } from "../../lib/simulated-route-model";
 import { visionApiSuccessSchema } from "../../lib/vision-contract";
+import { isRouteModelConfirmable } from "../../lib/route-confirmation";
+import { useRehearsalSession } from "../rehearsal-session-context";
 
 type CandidateKind = "nodes" | "exits";
 
@@ -42,10 +43,17 @@ function ReviewStatusSelect({
 }
 
 export function SetupCandidateState() {
-  const [model, setModel] = useState<RouteModel>(() => routeModelSchema.parse(simulatedRouteModel));
+  const {
+    candidateModel: model,
+    confirmedRouteModel,
+    setCandidateModel: setModel,
+    confirmCandidateModel,
+  } = useRehearsalSession();
   const [isExtracting, setIsExtracting] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  const [confirmationMessage, setConfirmationMessage] = useState<string | null>(null);
+  const canConfirm = isRouteModelConfirmable(model);
 
   async function extractCandidates(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -78,6 +86,7 @@ export function SetupCandidateState() {
       }
 
       setModel(parsedResponse.data.candidateModel);
+      setConfirmationMessage(null);
       setUploadMessage("Validated candidate structure loaded for human review. The route model remains Unconfirmed.");
     } catch (error) {
       setUploadError(
@@ -103,6 +112,11 @@ export function SetupCandidateState() {
         candidate.id === id ? result.data : candidate,
       ),
     }));
+  }
+
+  function confirmModel() {
+    confirmCandidateModel();
+    setConfirmationMessage("Route model confirmed by Consultant/Admin. The rehearsal is now available.");
   }
 
   function updateCandidateStatus(kind: CandidateKind, id: string, reviewStatus: CandidateReviewStatus) {
@@ -143,12 +157,14 @@ export function SetupCandidateState() {
           <h1>Route Setup &amp; Human Confirmation</h1>
           <p className="lede">Review editable candidate data for one fictional school route.</p>
         </div>
-        <span className="status statusWarning">Route model: {model.status}</span>
+        <span className={`status ${confirmedRouteModel ? "statusConfirmed" : "statusWarning"}`}>
+          Route model: {confirmedRouteModel?.status ?? model.status}
+        </span>
       </header>
 
       <aside className="notice noticeWarning">
-        <strong>Candidate data only.</strong>
-        <span>Editing a candidate does not confirm it or establish that a route is safe.</span>
+        <strong>Vision output is only a candidate extraction.</strong>
+        <span>Human confirmation is required before rehearsal.</span>
       </aside>
 
       <div className="setupGrid">
@@ -279,8 +295,13 @@ export function SetupCandidateState() {
       </div>
 
       <div className="actionBar">
-        <p>Candidate edits remain local. Confirmation is not implemented in this commit.</p>
-        <button disabled type="button">Confirm route model</button>
+        <div>
+          <p>Review all required route elements before confirmation.</p>
+          {confirmationMessage ? <p className="confirmationMessage" role="status">{confirmationMessage}</p> : null}
+        </div>
+        <button disabled={!canConfirm || Boolean(confirmedRouteModel)} onClick={confirmModel} type="button">
+          {confirmedRouteModel ? "Route model confirmed" : "Confirm route model"}
+        </button>
       </div>
     </>
   );

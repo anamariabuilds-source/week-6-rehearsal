@@ -1,4 +1,12 @@
+"use client";
+
+import { isRehearsalAvailable } from "../../lib/route-confirmation";
+import { useRehearsalSession } from "../rehearsal-session-context";
+
 export default function RehearsalPage() {
+  const { confirmedRouteModel } = useRehearsalSession();
+  const isAvailable = isRehearsalAvailable(confirmedRouteModel);
+
   return (
     <div className="stack">
       <header className="surfaceHeading">
@@ -7,7 +15,9 @@ export default function RehearsalPage() {
           <h1>Blocked-Exit Rehearsal</h1>
           <p className="lede">Participant-facing shell for one controlled, simulated rehearsal.</p>
         </div>
-        <span className="status statusNeutral">Not active</span>
+        <span className={`status ${isAvailable ? "statusConfirmed" : "statusNeutral"}`}>
+          {isAvailable ? "Available" : "Unavailable"}
+        </span>
       </header>
 
       <aside className="notice noticeInfo">
@@ -26,13 +36,17 @@ export default function RehearsalPage() {
         <div className="emptyState emptyStateWide">
           <span className="emptyIcon" aria-hidden="true">◇</span>
           <strong>Scenario area reserved</strong>
-          <p>The blocked-exit scene and participant controls are not implemented in Commit 1.</p>
+          <p>
+            {isAvailable
+              ? "The confirmed simulated route model is available for this rehearsal. Scenario behavior is added in the next increment."
+              : "A Consultant/Admin must explicitly confirm the route model before this rehearsal is available."}
+          </p>
         </div>
       </section>
 
       <div className="actionBar">
-        <p>Rehearsal controls remain unavailable in this foundation increment.</p>
-        <button disabled type="button">Start rehearsal</button>
+        <p>{isAvailable ? "Confirmed route model received." : "Route model confirmation required."}</p>
+        <button disabled={!isAvailable} type="button">Start rehearsal</button>
       </div>
     </div>
   );

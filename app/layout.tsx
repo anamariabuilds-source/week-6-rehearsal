@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { RehearsalSessionProvider } from "./rehearsal-session-context";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -49,7 +50,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             </nav>
           </div>
         </header>
-        <main className="pageFrame">{children}</main>
+        <RehearsalSessionProvider>
+          <main className="pageFrame">{children}</main>
+        </RehearsalSessionProvider>
         <footer className="siteFooter">
           Controlled digital prototype · No claim of preparedness, competence, safety, or physical transfer.
         </footer>

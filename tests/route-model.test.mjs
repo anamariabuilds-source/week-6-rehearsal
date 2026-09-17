@@ -17,6 +17,11 @@ import {
   extractVisionCandidateModel,
   parseVisionCandidateText,
 } from "../lib/gemini-vision.ts";
+import {
+  confirmRouteModel,
+  isRehearsalAvailable,
+  isRouteModelConfirmable,
+} from "../lib/route-confirmation.ts";
 
 const validRouteModel = {
   scenario: "SIMULATED SCHOOL",
@@ -64,6 +69,15 @@ const validVisionOutput = {
   labels: [
     { id: "school-label", text: "SIMULATED SCHOOL", reviewStatus: "Suggested" },
   ],
+};
+
+const resolvedRouteModel = {
+  ...validRouteModel,
+  exits: validRouteModel.exits.map((exit) => ({ ...exit, reviewStatus: "Confirmed" })),
+  connections: validRouteModel.connections.map((connection) => ({
+    ...connection,
+    reviewStatus: "Confirmed",
+  })),
 };
 
 test("valid route model passes", () => {
@@ -170,4 +184,54 @@ test("provider output cannot automatically create a Confirmed route model", () =
 
   assert.throws(() => parseVisionCandidateText(JSON.stringify(attemptedConfirmedOutput)));
   assert.equal(parseVisionCandidateText(JSON.stringify(validVisionOutput)).status, "Unconfirmed");
+});
+
+test("Suggested required item blocks confirmation", () => {
+  assert.equal(isRouteModelConfirmable(validRouteModel), false);
+});
+
+test("Needs review required item blocks confirmation", () => {
+  const model = {
+    ...resolvedRouteModel,
+    nodes: resolvedRouteModel.nodes.map((node) => ({ ...node, reviewStatus: "Needs review" })),
+  };
+
+  assert.equal(isRouteModelConfirmable(model), false);
+});
+
+test("invalid required item blocks confirmation", () => {
+  const model = {
+    ...resolvedRouteModel,
+    nodes: resolvedRouteModel.nodes.map((node) => ({ ...node, label: "" })),
+  };
+
+  assert.equal(isRouteModelConfirmable(model), false);
+});
+
+test("resolved required elements enable confirmation", () => {
+  assert.equal(isRouteModelConfirmable(resolvedRouteModel), true);
+});
+
+test("only explicit confirmation creates a Confirmed model", () => {
+  assert.equal(resolvedRouteModel.status, "Unconfirmed");
+  assert.equal(confirmRouteModel(resolvedRouteModel).status, "Confirmed");
+});
+
+test("Rejected elements do not enter the confirmed route model", () => {
+  const model = {
+    ...resolvedRouteModel,
+    labels: [
+      ...resolvedRouteModel.labels,
+      { id: "rejected-label", text: "Unsupported label", reviewStatus: "Rejected" },
+    ],
+  };
+  const confirmed = confirmRouteModel(model);
+
+  assert.equal(confirmed.labels.some((label) => label.id === "rejected-label"), false);
+});
+
+test("rehearsal availability requires a Confirmed model", () => {
+  assert.equal(isRehearsalAvailable(null), false);
+  assert.equal(isRehearsalAvailable(resolvedRouteModel), false);
+  assert.equal(isRehearsalAvailable(confirmRouteModel(resolvedRouteModel)), true);
 });
