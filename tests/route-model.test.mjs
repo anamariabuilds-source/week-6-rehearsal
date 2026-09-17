@@ -22,6 +22,11 @@ import {
   isRehearsalAvailable,
   isRouteModelConfirmable,
 } from "../lib/route-confirmation.ts";
+import {
+  applyRouteAction,
+  presentPrimaryExitBlockage,
+  startBlockedExitRehearsal,
+} from "../lib/rehearsal.ts";
 
 const validRouteModel = {
   scenario: "SIMULATED SCHOOL",
@@ -234,4 +239,69 @@ test("rehearsal availability requires a Confirmed model", () => {
   assert.equal(isRehearsalAvailable(null), false);
   assert.equal(isRehearsalAvailable(resolvedRouteModel), false);
   assert.equal(isRehearsalAvailable(confirmRouteModel(resolvedRouteModel)), true);
+});
+
+test("Unconfirmed model cannot start rehearsal", () => {
+  assert.equal(startBlockedExitRehearsal(resolvedRouteModel), null);
+});
+
+test("Confirmed model starts with the expected route", () => {
+  const state = startBlockedExitRehearsal(confirmRouteModel(resolvedRouteModel));
+
+  assert.equal(state?.phase, "route-presented");
+  assert.equal(state?.message, "Classroom A → Hallway A → Primary Exit");
+});
+
+test("Primary Exit becomes visibly blocked before actions are accepted", () => {
+  const started = startBlockedExitRehearsal(confirmRouteModel(resolvedRouteModel));
+  assert.ok(started);
+  const blocked = presentPrimaryExitBlockage(started);
+
+  assert.equal(blocked?.phase, "primary-exit-blocked");
+  assert.match(blocked?.heading ?? "", /Primary Exit is blocked/);
+});
+
+test("each allowed action produces its exact deterministic next state", () => {
+  const started = startBlockedExitRehearsal(confirmRouteModel(resolvedRouteModel));
+  assert.ok(started);
+  const blocked = presentPrimaryExitBlockage(started);
+  assert.ok(blocked);
+
+  assert.deepEqual(
+    applyRouteAction(blocked, "Continue toward Primary Exit"),
+    {
+      phase: "attempted-blocked-primary",
+      selectedAction: "Continue toward Primary Exit",
+      heading: "Primary Exit remains blocked",
+      message: "You attempted to continue toward the already-blocked Primary Exit.",
+    },
+  );
+  assert.equal(applyRouteAction(blocked, "Backtrack and reassess")?.phase, "reassessing");
+  assert.equal(
+    applyRouteAction(blocked, "Use Alternate Exit via Hallway B")?.phase,
+    "moving-to-alternate-exit",
+  );
+});
+
+test("invalid action cannot create an arbitrary next state", () => {
+  const started = startBlockedExitRehearsal(confirmRouteModel(resolvedRouteModel));
+  assert.ok(started);
+  const blocked = presentPrimaryExitBlockage(started);
+  assert.ok(blocked);
+
+  assert.equal(applyRouteAction(blocked, "Run through another exit"), null);
+});
+
+test("deterministic next-state copy contains no judgment language", () => {
+  const started = startBlockedExitRehearsal(confirmRouteModel(resolvedRouteModel));
+  assert.ok(started);
+  const blocked = presentPrimaryExitBlockage(started);
+  assert.ok(blocked);
+  const copy = [
+    "Continue toward Primary Exit",
+    "Backtrack and reassess",
+    "Use Alternate Exit via Hallway B",
+  ].map((action) => JSON.stringify(applyRouteAction(blocked, action))).join(" ");
+
+  assert.doesNotMatch(copy, /correct|incorrect|good|bad|prepared|competent|score/i);
 });
