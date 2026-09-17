@@ -15,6 +15,7 @@ Return only candidate structural elements visible in the image: nodes, exits, co
 Do not evaluate safety. Do not recommend routes. Do not infer emergency correctness or preparedness.
 Do not invent unsupported nodes, exits, connections, or labels. When uncertain, omit the unsupported element or mark the candidate as "Needs review" instead of making a confident claim.
 Use "Suggested" only for clearly visible candidates. Never use "Confirmed" or "Rejected".
+Every connection must include a short, non-empty descriptive label.
 Use short lowercase kebab-case IDs and reference those IDs in connection from/to fields.`;
 
 export const geminiResponseSchema = {
@@ -52,7 +53,7 @@ export const geminiResponseSchema = {
           id: { type: "STRING" },
           from: { type: "STRING" },
           to: { type: "STRING" },
-          label: { type: "STRING" },
+          label: { type: "STRING", minLength: 1 },
           reviewStatus: { type: "STRING", enum: ["Suggested", "Needs review"] },
         },
         required: ["id", "from", "to", "label", "reviewStatus"],

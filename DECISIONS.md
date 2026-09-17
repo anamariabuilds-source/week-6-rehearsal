@@ -11,6 +11,10 @@
 
 Gemini 2.5 Flash-Lite returned 404 NOT_FOUND for generateContent because it is unavailable to new API users. The provider explicitly instructed migration to gemini-3.5-flash-lite. We changed only the model identifier; the vision contract, human-validation gate, and product scope remain unchanged.
 
+Real Gemini extraction returned valid structural data but empty connection labels because the provider response schema did not enforce the same non-empty label constraint as the application Zod contract. We aligned the Gemini structured-output schema and prompt with the existing validation contract rather than weakening application validation.
+
+The standalone `public/assets/simulated-school-map.png` is now the tracked demo/test asset. The accidental `app/review/page 2.tsx` duplicate was removed.
+
 ## Next session’s first move
 
 Prepare Deploy 1 and run the formal Mechanical Pass against the deployed application.

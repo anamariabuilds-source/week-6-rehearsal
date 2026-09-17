@@ -148,6 +148,15 @@ test("valid simulated-map upload returns a validated Unconfirmed candidate model
   assert.equal(candidateModel.status, "Unconfirmed");
   assert.match(String(providerRequest.url), /gemini-3\.5-flash-lite/);
   assert.equal(providerRequest.init.headers["x-goog-api-key"], "test-key");
+  const providerBody = JSON.parse(providerRequest.init.body);
+  assert.equal(
+    providerBody.generationConfig.responseSchema.properties.connections.items.properties.label.minLength,
+    1,
+  );
+  assert.match(
+    providerBody.contents[0].parts[1].text,
+    /Every connection must include a short, non-empty descriptive label\./,
+  );
 });
 
 test("invalid image type is rejected before a provider call", async () => {
@@ -192,6 +201,30 @@ test("schema-valid candidate response is accepted as Unconfirmed", () => {
 
   assert.equal(candidateModel.status, "Unconfirmed");
   assert.equal(candidateModel.nodes[0].reviewStatus, "Suggested");
+});
+
+test("empty connection labels are rejected", () => {
+  const output = {
+    ...validVisionOutput,
+    connections: validVisionOutput.connections.map((connection) => ({
+      ...connection,
+      label: "",
+    })),
+  };
+
+  assert.throws(() => parseVisionCandidateText(JSON.stringify(output)));
+});
+
+test("whitespace-only connection labels are rejected", () => {
+  const output = {
+    ...validVisionOutput,
+    connections: validVisionOutput.connections.map((connection) => ({
+      ...connection,
+      label: "   ",
+    })),
+  };
+
+  assert.throws(() => parseVisionCandidateText(JSON.stringify(output)));
 });
 
 test("malformed Gemini JSON is rejected", () => {
