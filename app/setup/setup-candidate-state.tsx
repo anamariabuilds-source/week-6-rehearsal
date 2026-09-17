@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import {
   candidateReviewStatuses,
   candidateReviewStatusSchema,
@@ -12,6 +12,7 @@ import {
   type RouteModel,
 } from "../../lib/route-model";
 import { simulatedRouteModel } from "../../lib/simulated-route-model";
+import { visionApiSuccessSchema } from "../../lib/vision-contract";
 
 type CandidateKind = "nodes" | "exits";
 
@@ -42,6 +43,52 @@ function ReviewStatusSelect({
 
 export function SetupCandidateState() {
   const [model, setModel] = useState<RouteModel>(() => routeModelSchema.parse(simulatedRouteModel));
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+
+  async function extractCandidates(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    setIsExtracting(true);
+    setUploadError(null);
+    setUploadMessage(null);
+
+    try {
+      const response = await fetch("/api/vision/extract", {
+        method: "POST",
+        body: formData,
+      });
+      const body: unknown = await response.json();
+
+      if (!response.ok) {
+        const message = typeof body === "object" && body !== null && "error" in body
+          && typeof body.error === "string"
+          ? body.error
+          : "Candidate extraction is unavailable. Continue with the editable local candidates.";
+        throw new Error(message);
+      }
+
+      const parsedResponse = visionApiSuccessSchema.safeParse(body);
+
+      if (!parsedResponse.success) {
+        throw new Error("The candidate response could not be validated. Existing local candidates were kept.");
+      }
+
+      setModel(parsedResponse.data.candidateModel);
+      setUploadMessage("Validated candidate structure loaded for human review. The route model remains Unconfirmed.");
+    } catch (error) {
+      setUploadError(
+        error instanceof Error
+          ? error.message
+          : "Candidate extraction is unavailable. Continue with the editable local candidates.",
+      );
+    } finally {
+      setIsExtracting(false);
+    }
+  }
 
   function updateCandidateLabel(kind: CandidateKind, id: string, label: string) {
     const current = model[kind].find((candidate) => candidate.id === id);
@@ -111,19 +158,33 @@ export function SetupCandidateState() {
               <p className="panelKicker">{model.scenario}</p>
               <h2 id="environment-title">Candidate structure</h2>
             </div>
-            <span className="placeholderTag">Typed local state</span>
+            <span className="placeholderTag">Vision-assisted</span>
           </div>
-          <div className="routeDiagram" aria-label="Candidate route structure">
-            <div className="routeNode classroom">Classroom A</div>
-            <span className="routeLine lineOne" aria-hidden="true" />
-            <div className="routeNode hallwayA">Hallway A</div>
-            <span className="routeLine lineTwo" aria-hidden="true" />
-            <div className="routeNode primaryExit">Primary Exit</div>
-            <span className="routeLine lineThree" aria-hidden="true" />
-            <div className="routeNode hallwayB">Hallway B</div>
-            <span className="routeLine lineFour" aria-hidden="true" />
-            <div className="routeNode alternateExit">Alternate Exit</div>
-          </div>
+          <form className="visionUpload" onSubmit={extractCandidates}>
+            <label htmlFor="simulated-map">
+              <strong>Simulated-school map</strong>
+              <span>PNG or JPEG · maximum 4 MB</span>
+            </label>
+            <input
+              accept="image/png,image/jpeg"
+              disabled={isExtracting}
+              id="simulated-map"
+              name="image"
+              required
+              type="file"
+            />
+            <button disabled={isExtracting} type="submit">
+              {isExtracting ? "Extracting candidates…" : "Propose candidate structure"}
+            </button>
+            {uploadError ? <p className="uploadFeedback uploadError" role="alert">{uploadError}</p> : null}
+            {uploadMessage ? <p className="uploadFeedback uploadSuccess" role="status">{uploadMessage}</p> : null}
+          </form>
+          <dl className="candidateSummary" aria-label="Current candidate counts">
+            <div><dt>Nodes</dt><dd>{model.nodes.length}</dd></div>
+            <div><dt>Exits</dt><dd>{model.exits.length}</dd></div>
+            <div><dt>Connections</dt><dd>{model.connections.length}</dd></div>
+            <div><dt>Labels</dt><dd>{model.labels.length}</dd></div>
+          </dl>
           <p className="routeBoundary">Fictional candidate structure only. No route-safety, compliance, or emergency recommendation is provided.</p>
         </section>
 
