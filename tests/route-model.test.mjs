@@ -146,7 +146,7 @@ test("valid simulated-map upload returns a validated Unconfirmed candidate model
   });
 
   assert.equal(candidateModel.status, "Unconfirmed");
-  assert.match(String(providerRequest.url), /gemini-2\.5-flash-lite/);
+  assert.match(String(providerRequest.url), /gemini-3\.5-flash-lite/);
   assert.equal(providerRequest.init.headers["x-goog-api-key"], "test-key");
 });
 

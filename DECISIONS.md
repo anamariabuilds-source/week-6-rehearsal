@@ -7,6 +7,10 @@
 - Use the existing three-value result contract directly in the review UI without adding scores, ratings, recommendations, or automated conclusions.
 - Extend regression coverage through a mocked successful Gemini request and explicit pre-provider oversized-upload rejection.
 
+## Pre-Deploy-1 provider compatibility
+
+Gemini 2.5 Flash-Lite returned 404 NOT_FOUND for generateContent because it is unavailable to new API users. The provider explicitly instructed migration to gemini-3.5-flash-lite. We changed only the model identifier; the vision contract, human-validation gate, and product scope remain unchanged.
+
 ## Next session’s first move
 
 Prepare Deploy 1 and run the formal Mechanical Pass against the deployed application.

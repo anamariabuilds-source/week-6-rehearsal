@@ -6,7 +6,7 @@ import {
   type VisionCandidateModel,
 } from "./vision-contract.ts";
 
-const geminiModel = "gemini-2.5-flash-lite";
+const geminiModel = "gemini-3.5-flash-lite";
 const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
 const providerTimeoutMs = 15_000;
 
