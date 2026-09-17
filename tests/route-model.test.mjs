@@ -8,6 +8,7 @@ import {
   reviewerNoteSchema,
   routeActionSchema,
   routeModelSchema,
+  updateCandidateReviewStatus,
 } from "../lib/route-model.ts";
 import {
   allowedImageMimeTypes,
@@ -334,6 +335,31 @@ test("invalid required item blocks confirmation", () => {
 
 test("resolved required elements enable confirmation", () => {
   assert.equal(isRouteModelConfirmable(resolvedRouteModel), true);
+});
+
+test("UI status updates enable confirmation only after every candidate is Confirmed", () => {
+  let model = {
+    ...resolvedRouteModel,
+    nodes: resolvedRouteModel.nodes.map((candidate) => ({ ...candidate, reviewStatus: "Suggested" })),
+    exits: resolvedRouteModel.exits.map((candidate) => ({ ...candidate, reviewStatus: "Suggested" })),
+    connections: resolvedRouteModel.connections.map((candidate) => ({ ...candidate, reviewStatus: "Suggested" })),
+    labels: [
+      ...resolvedRouteModel.labels.map((candidate) => ({ ...candidate, reviewStatus: "Suggested" })),
+      { id: "second-label", text: "Not a validated evacuation plan", reviewStatus: "Suggested" },
+    ],
+  };
+
+  for (const collection of ["nodes", "exits", "connections", "labels"]) {
+    for (const candidate of model[collection]) {
+      model = updateCandidateReviewStatus(model, collection, candidate.id, "Confirmed");
+    }
+  }
+
+  assert.equal(isRouteModelConfirmable(model), true);
+  assert.equal(model.status, "Unconfirmed");
+
+  model = updateCandidateReviewStatus(model, "labels", "second-label", "Needs review");
+  assert.equal(isRouteModelConfirmable(model), false);
 });
 
 test("only explicit confirmation creates a Confirmed model", () => {

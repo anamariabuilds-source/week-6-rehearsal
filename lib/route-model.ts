@@ -73,6 +73,21 @@ export type Connection = z.infer<typeof connectionSchema>;
 export type RouteLabel = z.infer<typeof routeLabelSchema>;
 export type RouteModel = z.infer<typeof routeModelSchema>;
 export type RouteAction = z.infer<typeof routeActionSchema>;
+export type CandidateCollection = "nodes" | "exits" | "connections" | "labels";
+
+export function updateCandidateReviewStatus(
+  model: RouteModel,
+  collection: CandidateCollection,
+  id: string,
+  reviewStatus: CandidateReviewStatus,
+): RouteModel {
+  return routeModelSchema.parse({
+    ...model,
+    [collection]: model[collection].map((candidate) =>
+      candidate.id === id ? { ...candidate, reviewStatus } : candidate,
+    ),
+  });
+}
 
 export function formatConnectionIdentity(
   connection: Connection,

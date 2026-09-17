@@ -9,6 +9,8 @@ import {
   routeNodeSchema,
   exitSchema,
   formatConnectionIdentity,
+  updateCandidateReviewStatus,
+  type CandidateCollection,
   type CandidateReviewStatus,
   type RouteModel,
 } from "../../lib/route-model";
@@ -120,22 +122,14 @@ export function SetupCandidateState() {
     setConfirmationMessage("Route model confirmed by Consultant/Admin. The rehearsal is now available.");
   }
 
-  function updateCandidateStatus(kind: CandidateKind, id: string, reviewStatus: CandidateReviewStatus) {
-    setModel((currentModel) => routeModelSchema.parse({
-      ...currentModel,
-      [kind]: currentModel[kind].map((candidate) =>
-        candidate.id === id ? { ...candidate, reviewStatus } : candidate,
-      ),
-    }));
-  }
-
-  function updateConnectionStatus(id: string, reviewStatus: CandidateReviewStatus) {
-    setModel((currentModel) => routeModelSchema.parse({
-      ...currentModel,
-      connections: currentModel.connections.map((connection) =>
-        connection.id === id ? { ...connection, reviewStatus } : connection,
-      ),
-    }));
+  function updateReviewStatus(
+    collection: CandidateCollection,
+    id: string,
+    reviewStatus: CandidateReviewStatus,
+  ) {
+    setModel((currentModel) =>
+      updateCandidateReviewStatus(currentModel, collection, id, reviewStatus),
+    );
   }
 
   function updateRouteLabel(id: string, text: string) {
@@ -148,15 +142,6 @@ export function SetupCandidateState() {
       ...currentModel,
       labels: currentModel.labels.map((label) =>
         label.id === id ? result.data : label,
-      ),
-    }));
-  }
-
-  function updateRouteLabelStatus(id: string, reviewStatus: CandidateReviewStatus) {
-    setModel((currentModel) => routeModelSchema.parse({
-      ...currentModel,
-      labels: currentModel.labels.map((label) =>
-        label.id === id ? { ...label, reviewStatus } : label,
       ),
     }));
   }
@@ -238,7 +223,7 @@ export function SetupCandidateState() {
                   </label>
                   <ReviewStatusSelect
                     label={node.label}
-                    onChange={(status) => updateCandidateStatus("nodes", node.id, status)}
+                    onChange={(status) => updateReviewStatus("nodes", node.id, status)}
                     value={node.reviewStatus}
                   />
                 </CandidateRow>
@@ -259,7 +244,7 @@ export function SetupCandidateState() {
                   </label>
                   <ReviewStatusSelect
                     label={exit.label}
-                    onChange={(status) => updateCandidateStatus("exits", exit.id, status)}
+                    onChange={(status) => updateReviewStatus("exits", exit.id, status)}
                     value={exit.reviewStatus}
                   />
                 </CandidateRow>
@@ -275,7 +260,7 @@ export function SetupCandidateState() {
                     <span className="connectionLabel">{connectionIdentity}</span>
                     <ReviewStatusSelect
                       label={connectionIdentity}
-                      onChange={(status) => updateConnectionStatus(connection.id, status)}
+                      onChange={(status) => updateReviewStatus("connections", connection.id, status)}
                       value={connection.reviewStatus}
                     />
                   </CandidateRow>
@@ -297,7 +282,7 @@ export function SetupCandidateState() {
                   </label>
                   <ReviewStatusSelect
                     label={label.text}
-                    onChange={(reviewStatus) => updateRouteLabelStatus(label.id, reviewStatus)}
+                    onChange={(reviewStatus) => updateReviewStatus("labels", label.id, reviewStatus)}
                     value={label.reviewStatus}
                   />
                 </CandidateRow>

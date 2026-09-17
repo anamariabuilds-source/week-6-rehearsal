@@ -33,6 +33,16 @@ Smallest fix: render and update every validated candidate label so every require
 
 Deploy 2 → fix → redeploy pending.
 
+## Confirmation affordance after Deploy 2
+
+Deployed symptom: all 3 nodes, 2 exits, 4 connections, and 2 labels displayed Confirmed, but the Confirm route model control still appeared disabled.
+
+Verified root cause: the dropdowns and `canConfirm()` already used the same current candidate model, and the gate recomputed on every state update. The action-bar button was styled with disabled colors and `cursor: not-allowed` unconditionally, including when its `disabled` attribute was false.
+
+Smallest fix: distinguish enabled and disabled action-bar button styles, and route every candidate dropdown through one tested immutable status-update helper. The confirmation predicate and explicit human click remain unchanged.
+
+Redeploy pending.
+
 ## Next session’s first move
 
 Redeploy the human-confirmation gate fix; do not begin the Persona Test yet.
