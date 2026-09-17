@@ -33,7 +33,7 @@ export function startBlockedExitRehearsal(confirmedModel: RouteModel | null): Re
   return {
     phase: "route-presented",
     selectedAction: null,
-    heading: "Expected route",
+    heading: "Starting route",
     message: "Classroom A → Hallway A → Primary Exit",
   };
 }
@@ -45,7 +45,7 @@ export function presentPrimaryExitBlockage(state: RehearsalState): RehearsalStat
     phase: "primary-exit-blocked",
     selectedAction: null,
     heading: "Primary Exit is blocked",
-    message: "The expected route cannot continue through the Primary Exit. Choose one available action.",
+    message: "The starting route cannot continue through the Primary Exit. Choose one available action.",
   };
 }
 

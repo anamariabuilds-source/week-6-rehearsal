@@ -390,10 +390,11 @@ test("Unconfirmed model cannot start rehearsal", () => {
   assert.equal(startBlockedExitRehearsal(resolvedRouteModel), null);
 });
 
-test("Confirmed model starts with the expected route", () => {
+test("Confirmed model presents the route as a starting condition", () => {
   const state = startBlockedExitRehearsal(confirmRouteModel(resolvedRouteModel));
 
   assert.equal(state?.phase, "route-presented");
+  assert.equal(state?.heading, "Starting route");
   assert.equal(state?.message, "Classroom A → Hallway A → Primary Exit");
 });
 

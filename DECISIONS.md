@@ -43,6 +43,16 @@ Smallest fix: distinguish enabled and disabled action-bar button styles, and rou
 
 Redeploy pending.
 
+## Persona Test finding
+
+Persona Test finding: “Expected route” could be interpreted as an instruction rather than a starting condition.
+
+Why it matters: this ambiguity could contaminate the FAILED-ROUTE PERSISTENCE behavioral signal.
+
+Fix: rename “Expected route” to “Starting route.”
+
+Retest pending.
+
 ## Next session’s first move
 
-Redeploy the human-confirmation gate fix; do not begin the Persona Test yet.
+Redeploy and retest the clarified rehearsal starting-route copy.

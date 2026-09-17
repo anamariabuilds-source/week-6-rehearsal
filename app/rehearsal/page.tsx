@@ -49,7 +49,7 @@ export default function RehearsalPage() {
           </span>
         </div>
         <div className="rehearsalScene">
-          <div className="rehearsalRoute" aria-label="Expected route from Classroom A through Hallway A to Primary Exit">
+          <div className="rehearsalRoute" aria-label="Starting route from Classroom A through Hallway A to Primary Exit">
             <div className="sceneNode">Classroom A</div>
             <span aria-hidden="true">→</span>
             <div className="sceneNode">Hallway A</div>
@@ -95,7 +95,7 @@ export default function RehearsalPage() {
               : rehearsalState.phase === "idle"
                 ? "Confirmed route model received."
                 : rehearsalState.phase === "route-presented"
-                  ? "The expected route is visible. Continue to the controlled blocked-exit condition."
+                  ? "The starting route is visible. Continue to the controlled blocked-exit condition."
                   : "The selected action produced the next state shown above."}
           </p>
           {rehearsalState.phase === "route-presented" ? (
