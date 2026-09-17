@@ -1,0 +1,14 @@
+.DS_Store
+node_modules/
+.next/
+.env
+.env.local
+.env.*.local
+.vercel/
+
+# Local reference/submission files not needed by the app
+BLUEPRINT.pdf
+Brief_ Ana Maria Matas.docx
+Brief_ Ana Maria Matas.pdf
+PACKET_AnaMariaMatas(2).pdf
+briefs equipo/
