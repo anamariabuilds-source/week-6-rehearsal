@@ -5,7 +5,7 @@ const surfaces = [
     step: "01",
     actor: "Consultant/Admin",
     title: "Route Setup & Human Confirmation",
-    description: "Static setup surface for the simulated route model.",
+    description: "Review vision-assisted candidates and explicitly confirm the simulated route model.",
     href: "/setup",
   },
   {
@@ -19,7 +19,7 @@ const surfaces = [
     step: "03",
     actor: "Human Reviewer",
     title: "Trace & Human Review",
-    description: "Separate reviewer-facing surface for later human inspection.",
+    description: "Inspect the bounded event trace and add a human-authored review note.",
     href: "/review",
   },
 ];
@@ -28,10 +28,10 @@ export default function Home() {
   return (
     <div className="stack stackLarge">
       <section className="hero">
-        <p className="eyebrow">SIMULATED SCHOOL · STATIC FOUNDATION</p>
+        <p className="eyebrow">SIMULATED SCHOOL · CONTROLLED REHEARSAL</p>
         <h1>Three surfaces, three distinct responsibilities.</h1>
         <p className="heroCopy">
-          This foundation establishes the approved product structure only. Rehearsal behavior and evidence features are not active in this increment.
+          Move through route setup and human confirmation, the controlled blocked-exit rehearsal, and bounded human review.
         </p>
       </section>
 
@@ -47,7 +47,7 @@ export default function Home() {
               <span className="actorBadge">{surface.actor}</span>
               <h3>{surface.title}</h3>
               <p>{surface.description}</p>
-              <span className="cardAction">Open static surface →</span>
+              <span className="cardAction">Open surface →</span>
             </Link>
           ))}
         </div>

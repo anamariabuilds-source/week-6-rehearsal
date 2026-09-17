@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Week 6 Rehearsal",
-  description: "Static shell for the Week 6 controlled rehearsal prototype.",
+  description: "Three-surface workflow for a controlled simulated-school rehearsal.",
 };
 
 const surfaces = [

@@ -8,6 +8,7 @@ import {
   routeModelSchema,
   routeNodeSchema,
   exitSchema,
+  formatConnectionIdentity,
   type CandidateReviewStatus,
   type RouteModel,
 } from "../../lib/route-model";
@@ -255,16 +256,20 @@ export function SetupCandidateState() {
             </CandidateGroup>
 
             <CandidateGroup title="Allowed connections">
-              {model.connections.map((connection) => (
-                <CandidateRow key={connection.id}>
-                  <span className="connectionLabel">{connection.label}</span>
-                  <ReviewStatusSelect
-                    label={connection.label}
-                    onChange={(status) => updateConnectionStatus(connection.id, status)}
-                    value={connection.reviewStatus}
-                  />
-                </CandidateRow>
-              ))}
+              {model.connections.map((connection) => {
+                const connectionIdentity = formatConnectionIdentity(connection, model);
+
+                return (
+                  <CandidateRow key={connection.id}>
+                    <span className="connectionLabel">{connectionIdentity}</span>
+                    <ReviewStatusSelect
+                      label={connectionIdentity}
+                      onChange={(status) => updateConnectionStatus(connection.id, status)}
+                      value={connection.reviewStatus}
+                    />
+                  </CandidateRow>
+                );
+              })}
             </CandidateGroup>
 
             <CandidateGroup title="Simple label">

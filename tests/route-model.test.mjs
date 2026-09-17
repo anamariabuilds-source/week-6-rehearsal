@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   candidateReviewStatusSchema,
+  formatConnectionIdentity,
   reviewerNoteMaxLength,
   reviewerNoteSchema,
   routeActionSchema,
@@ -96,6 +97,36 @@ const resolvedRouteModel = {
 
 test("valid route model passes", () => {
   assert.equal(routeModelSchema.safeParse(validRouteModel).success, true);
+});
+
+test("distinct connections are presented by their endpoint labels", () => {
+  const model = {
+    nodes: [
+      { id: "classroom-a", label: "Classroom A", reviewStatus: "Suggested" },
+      { id: "hallway-a", label: "Hallway A", reviewStatus: "Suggested" },
+      { id: "hallway-b", label: "Hallway B", reviewStatus: "Suggested" },
+    ],
+    exits: [
+      { id: "primary-exit", label: "Primary Exit", reviewStatus: "Suggested" },
+      { id: "alternate-exit", label: "Alternate Exit", reviewStatus: "Suggested" },
+    ],
+  };
+  const connections = [
+    { id: "one", from: "classroom-a", to: "hallway-a", label: "connects", reviewStatus: "Suggested" },
+    { id: "two", from: "hallway-a", to: "primary-exit", label: "connects", reviewStatus: "Suggested" },
+    { id: "three", from: "hallway-a", to: "hallway-b", label: "connects", reviewStatus: "Suggested" },
+    { id: "four", from: "hallway-b", to: "alternate-exit", label: "connects", reviewStatus: "Suggested" },
+  ];
+
+  assert.deepEqual(
+    connections.map((connection) => formatConnectionIdentity(connection, model)),
+    [
+      "Classroom A → Hallway A",
+      "Hallway A → Primary Exit",
+      "Hallway A → Hallway B",
+      "Hallway B → Alternate Exit",
+    ],
+  );
 });
 
 test("malformed or incomplete route model fails", () => {

@@ -15,6 +15,14 @@ Real Gemini extraction returned valid structural data but empty connection label
 
 The standalone `public/assets/simulated-school-map.png` is now the tracked demo/test asset. The accidental `app/review/page 2.tsx` duplicate was removed.
 
+## Mechanical Pass — Deploy 1
+
+Deploy 1 → bug observed: distinct extracted connections were rendered with the same generic “connects” label, preventing the Consultant/Admin from knowing which connection was being reviewed.
+
+Fix: render connection identity from validated from/to endpoints rather than depending on a generic provider label.
+
+Deploy 2 pending.
+
 ## Next session’s first move
 
-Prepare Deploy 1 and run the formal Mechanical Pass against the deployed application.
+Prepare Deploy 2; do not begin the Persona Test yet.

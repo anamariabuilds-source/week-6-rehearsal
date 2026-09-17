@@ -73,3 +73,14 @@ export type Connection = z.infer<typeof connectionSchema>;
 export type RouteLabel = z.infer<typeof routeLabelSchema>;
 export type RouteModel = z.infer<typeof routeModelSchema>;
 export type RouteAction = z.infer<typeof routeActionSchema>;
+
+export function formatConnectionIdentity(
+  connection: Connection,
+  model: Pick<RouteModel, "nodes" | "exits">,
+) {
+  const labelsById = new Map(
+    [...model.nodes, ...model.exits].map((item) => [item.id, item.label]),
+  );
+
+  return `${labelsById.get(connection.from) ?? connection.from} → ${labelsById.get(connection.to) ?? connection.to}`;
+}
