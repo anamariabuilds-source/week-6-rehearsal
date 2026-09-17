@@ -1,12 +1,12 @@
-# Commit 5 decisions
+# Commit 6 decisions
 
-- Model the rehearsal as deterministic TypeScript phases: idle, route presented, Primary Exit blocked, and one fixed phase for each allowed action.
-- Require a confirmed route model before the start transition can occur.
-- Separate route presentation from blockage presentation so the controlled sequence is visible before participant actions appear.
-- Accept only the three locked route-action strings and return no next state for any other value.
-- Show the selected action beside its resulting state to make action-to-state causality explicit.
-- Keep all next-state language descriptive and omit correctness, readiness, competence, and scoring judgments.
+- Store one typed, in-memory session evidence object with scenario version, validity, optional confound reason, and a structured event array.
+- Record exactly four events for a completed path: rehearsal started, blockage presented, route action selected, and next state presented.
+- Require one of each event in chronological sequence and require the next state to match the selected allowlisted action.
+- Return `Indeterminate` for malformed, incomplete, duplicated, out-of-order, mismatched, or technically confounded evidence.
+- Detect FAILED-ROUTE PERSISTENCE only when `Continue toward Primary Exit` follows the visible Primary Exit blockage.
+- Keep the bounded evaluation in deterministic TypeScript with no Gemini participation, thresholds, scores, or additional patterns.
 
 ## Next session’s first move
 
-Add the minimum typed in-memory events needed to evaluate only FAILED-ROUTE PERSISTENCE, including validity/confound handling.
+Render the completed evidence and bounded result for a Human Reviewer, add the validated in-memory note and reset behavior, then run the full pre-Deploy-1 regression audit.

@@ -67,6 +67,10 @@ const nextStateByAction: Record<RouteAction, Omit<RehearsalState, "selectedActio
   },
 };
 
+export function expectedNextPhase(action: RouteAction): RehearsalPhase {
+  return nextStateByAction[action].phase;
+}
+
 export function applyRouteAction(
   state: RehearsalState,
   action: unknown,

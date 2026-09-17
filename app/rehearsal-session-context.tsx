@@ -16,6 +16,14 @@ import {
   startBlockedExitRehearsal,
   type RehearsalState,
 } from "../lib/rehearsal";
+import {
+  createSessionEvidence,
+  evaluateFailedRoutePersistence,
+  recordActionResult,
+  recordBlockage,
+  type PatternResult,
+  type SessionEvidence,
+} from "../lib/event-trace";
 
 type CandidateUpdater = RouteModel | ((current: RouteModel) => RouteModel);
 
@@ -28,6 +36,8 @@ type RehearsalSessionContextValue = {
   startRehearsal: () => void;
   presentBlockage: () => void;
   chooseRouteAction: (action: unknown) => void;
+  sessionEvidence: SessionEvidence | null;
+  patternResult: PatternResult | null;
 };
 
 const RehearsalSessionContext = createContext<RehearsalSessionContextValue | null>(null);
@@ -38,6 +48,8 @@ export function RehearsalSessionProvider({ children }: { children: ReactNode }) 
   );
   const [confirmedRouteModel, setConfirmedRouteModel] = useState<RouteModel | null>(null);
   const [rehearsalState, setRehearsalState] = useState<RehearsalState>(idleRehearsalState);
+  const [sessionEvidence, setSessionEvidence] = useState<SessionEvidence | null>(null);
+  const [patternResult, setPatternResult] = useState<PatternResult | null>(null);
 
   function setCandidateModel(updater: CandidateUpdater) {
     setCandidateState((current) => {
@@ -46,6 +58,8 @@ export function RehearsalSessionProvider({ children }: { children: ReactNode }) 
     });
     setConfirmedRouteModel(null);
     setRehearsalState(idleRehearsalState);
+    setSessionEvidence(null);
+    setPatternResult(null);
   }
 
   function confirmCandidateModel() {
@@ -54,17 +68,36 @@ export function RehearsalSessionProvider({ children }: { children: ReactNode }) 
 
   function startRehearsal() {
     const nextState = startBlockedExitRehearsal(confirmedRouteModel);
-    if (nextState) setRehearsalState(nextState);
+    if (nextState) {
+      setRehearsalState(nextState);
+      setSessionEvidence(createSessionEvidence(new Date().toISOString()));
+      setPatternResult(null);
+    }
   }
 
   function presentBlockage() {
     const nextState = presentPrimaryExitBlockage(rehearsalState);
-    if (nextState) setRehearsalState(nextState);
+    if (nextState && sessionEvidence) {
+      setRehearsalState(nextState);
+      setSessionEvidence(recordBlockage(sessionEvidence, new Date().toISOString()));
+    }
   }
 
   function chooseRouteAction(action: unknown) {
     const nextState = applyRouteAction(rehearsalState, action);
-    if (nextState) setRehearsalState(nextState);
+    if (nextState && nextState.selectedAction && sessionEvidence) {
+      const actionTimestamp = new Date().toISOString();
+      const nextEvidence = recordActionResult(
+        sessionEvidence,
+        nextState.selectedAction,
+        nextState.phase,
+        actionTimestamp,
+        new Date().toISOString(),
+      );
+      setRehearsalState(nextState);
+      setSessionEvidence(nextEvidence);
+      setPatternResult(evaluateFailedRoutePersistence(nextEvidence));
+    }
   }
 
   return (
@@ -77,6 +110,8 @@ export function RehearsalSessionProvider({ children }: { children: ReactNode }) 
       startRehearsal,
       presentBlockage,
       chooseRouteAction,
+      sessionEvidence,
+      patternResult,
     }}>
       {children}
     </RehearsalSessionContext.Provider>

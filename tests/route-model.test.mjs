@@ -24,9 +24,18 @@ import {
 } from "../lib/route-confirmation.ts";
 import {
   applyRouteAction,
+  expectedNextPhase,
   presentPrimaryExitBlockage,
   startBlockedExitRehearsal,
 } from "../lib/rehearsal.ts";
+import {
+  createSessionEvidence,
+  evaluateFailedRoutePersistence,
+  markSessionConfounded,
+  patternResultSchema,
+  recordActionResult,
+  recordBlockage,
+} from "../lib/event-trace.ts";
 
 const validRouteModel = {
   scenario: "SIMULATED SCHOOL",
@@ -304,4 +313,82 @@ test("deterministic next-state copy contains no judgment language", () => {
   ].map((action) => JSON.stringify(applyRouteAction(blocked, action))).join(" ");
 
   assert.doesNotMatch(copy, /correct|incorrect|good|bad|prepared|competent|score/i);
+});
+
+function completedEvidence(action) {
+  const started = createSessionEvidence("2026-09-17T14:00:00.000Z");
+  const blocked = recordBlockage(started, "2026-09-17T14:00:01.000Z");
+  return recordActionResult(
+    blocked,
+    action,
+    expectedNextPhase(action),
+    "2026-09-17T14:00:02.000Z",
+    "2026-09-17T14:00:03.000Z",
+  );
+}
+
+test("event trace matches the actual selected action and resulting state", () => {
+  const evidence = completedEvidence("Backtrack and reassess");
+
+  assert.deepEqual(evidence.events.map((event) => event.type), [
+    "rehearsal_started",
+    "blockage_presented",
+    "route_action_selected",
+    "next_state_presented",
+  ]);
+  assert.equal(evidence.events[2].action, "Backtrack and reassess");
+  assert.equal(evidence.events[3].nextState, "reassessing");
+});
+
+test("blockage must precede any persistence detection", () => {
+  const evidence = completedEvidence("Continue toward Primary Exit");
+  const outOfOrder = {
+    ...evidence,
+    events: [evidence.events[0], evidence.events[2], evidence.events[1], evidence.events[3]],
+  };
+
+  assert.equal(evaluateFailedRoutePersistence(outOfOrder), "Indeterminate");
+});
+
+test("continuing toward Primary Exit after blockage detects the pattern", () => {
+  assert.equal(
+    evaluateFailedRoutePersistence(completedEvidence("Continue toward Primary Exit")),
+    "Pattern detected",
+  );
+});
+
+test("valid backtrack path does not detect the pattern", () => {
+  assert.equal(
+    evaluateFailedRoutePersistence(completedEvidence("Backtrack and reassess")),
+    "Pattern not detected",
+  );
+});
+
+test("valid Alternate Exit path does not detect the pattern", () => {
+  assert.equal(
+    evaluateFailedRoutePersistence(completedEvidence("Use Alternate Exit via Hallway B")),
+    "Pattern not detected",
+  );
+});
+
+test("incomplete trace is Indeterminate", () => {
+  assert.equal(
+    evaluateFailedRoutePersistence(createSessionEvidence("2026-09-17T14:00:00.000Z")),
+    "Indeterminate",
+  );
+});
+
+test("invalid or confounded session is Indeterminate", () => {
+  const evidence = completedEvidence("Continue toward Primary Exit");
+  const confounded = markSessionConfounded(evidence, "Interface did not render consistently.");
+
+  assert.equal(evaluateFailedRoutePersistence(confounded), "Indeterminate");
+  assert.equal(evaluateFailedRoutePersistence({ nonsense: true }), "Indeterminate");
+});
+
+test("unsupported pattern result strings are rejected", () => {
+  assert.equal(patternResultSchema.safeParse("Participant is prepared").success, false);
+  assert.equal(patternResultSchema.safeParse("Pattern detected").success, true);
+  assert.equal(patternResultSchema.safeParse("Pattern not detected").success, true);
+  assert.equal(patternResultSchema.safeParse("Indeterminate").success, true);
 });
